@@ -51,6 +51,13 @@ def get_resource(resource):
         return json.dumps(result), 200, \
                {"content-type": "application/json; charset: utf-8"}
     elif request.method == 'POST':
+        result=SimpleBO.insert(resource, in_args)
+        if result:
+            return json.dumps(result), 200, \
+                {"content-type": "application/json; charset: utf-8"}
+        else:
+            return "Not Found", 404
+'''
         print("This would be a really good place to call insert()")
         print("on table ", resource)
         print("with row ", body)
@@ -60,6 +67,7 @@ def get_resource(resource):
     else:
         return "Method " + request.method + " on resource " + resource + \
                " not implemented!", 501, {"content-type": "text/plain; charset: utf-8"}
+'''
 
 @app.route('/api/<resource>/<primarykey>', methods=['GET', 'PUT', 'DELETE'])
 def get_primarykey(resource, primarykey):
@@ -74,7 +82,7 @@ def get_primarykey(resource, primarykey):
         else:
             return "Not Found", 404
 
-    if request.method=='PUT':
+    elif request.method=='PUT':
         in_args=parse_and_print_args()[0]
         result=SimpleBO.update_by_primarykey(resource, primarykey, in_args)
         if result:
@@ -82,6 +90,15 @@ def get_primarykey(resource, primarykey):
                 {"content-type": "application/json; charset: utf-8"}
         else:
             return "Not Found", 404
+
+    elif request.method=='DELETE':
+        result=SimpleBO.delete(resource, primarykey)
+        if result:
+            return json.dumps(result), 200, \
+                {"content-type": "application/json; charset: utf-8"}
+        else:
+            return "Not Found", 404
+
 
 if __name__ == '__main__':
     app.run()

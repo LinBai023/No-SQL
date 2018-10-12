@@ -56,8 +56,8 @@ def find_by_primarykey(table, key_values, fields):
     print(q)
     result = run_q(q, None, True)
     return result
-    print(result)
-    '''
+
+'''
     q = "SHOW KEYS FROM " + table + " WHERE Key_name ='PRIMARY'"
     keyname = run_q(q, None, True)
     key_column = keyname[0]['Column_name']
@@ -70,7 +70,7 @@ def find_by_primarykey(table, key_values, fields):
         return result
     else:
         return None
-    '''
+'''
 
 def update_by_primarykey(table, primarykey, in_args):
     s=""
@@ -93,13 +93,28 @@ def update_by_primarykey(table, primarykey, in_args):
 
 
 
-def delete(table, template):
-    w = template_to_where_clause(template)
-    q = "delete from " + table + " " + w
-    run_q(q)
+def delete(table, primarykey):
+    q = "SHOW KEYS FROM " + table + " WHERE Key_name ='PRIMARY'"
+    keyname = run_q(q, None, True)
+    key_column=keyname[0]['Column_name']
+    q = "delete from " + table + " WHERE " + key_column+" ='"+primarykey+"';"
+    run_q(q, None, True)
 
-def insert(table, row):
-    pass
+def insert(table, in_args):
+    key=""
+    value=""
+    for(k,v) in in_args.items():
+        key+= k+","
+        value+= "'"+v[0]+"'"+","
+    key=key.rstrip(',')
+    value=value.rstrip(',')
+    print("key:"+key+"\n")
+    print("value:"+value)
+    q="INSERT INTO "+table+"("+key+")"+" Values "+"("+value+")"
+    print(q)
+    run_q(q, None, True)
+
+
 
 def test1():
     result=update_by_primarykey("People", "willite01",  {"nameLast": ["Williams"]})
@@ -109,7 +124,18 @@ def test2():
     result=find_by_primarykey("People", "willite01", "*")
     print(result)
 
-test2()
+def test3():
+    insert("People", {"playerID":["ME2.0"], "nameLast":["BAI"]})
+
+def test4():
+    delete("People", "ME2.0")
+
+def test5():
+    result = find_by_primarykey("People", "ME2.0", "*")
+    print(result)
+
+
+test4()
 
 
 
