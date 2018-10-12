@@ -72,6 +72,27 @@ def find_by_primarykey(table, key_values, fields):
         return None
     '''
 
+def update_by_primarykey(table, primarykey, in_args):
+    s=""
+    for (k, v) in in_args.items():
+        if s != "":
+            s += " AND "
+        s += k + "='" + v[0] + "'"
+    '''
+    wc=template_to_where_clause(in_args)
+    '''
+
+    q1 = "SHOW KEYS FROM " + table + " WHERE Key_name ='PRIMARY'"
+    keyname = run_q(q1, None, True)
+    key_column=keyname[0]['Column_name']
+    q2 = "UPDATE "+ table + " SET " + s +" WHERE "+key_column+"="+"'"+primarykey+"';"
+
+    result=run_q(q2 , None, True)
+    print(result)
+    return result
+
+
+
 def delete(table, template):
     w = template_to_where_clause(template)
     q = "delete from " + table + " " + w
@@ -79,4 +100,16 @@ def delete(table, template):
 
 def insert(table, row):
     pass
+
+def test1():
+    result=update_by_primarykey("People", "willite01",  {"nameLast": ["Williams"]})
+    print(result)
+
+def test2():
+    result=find_by_primarykey("People", "willite01", "*")
+    print(result)
+
+test2()
+
+
 

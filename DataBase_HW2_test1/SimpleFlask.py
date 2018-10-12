@@ -65,9 +65,18 @@ def get_resource(resource):
 def get_primarykey(resource, primarykey):
 
 
-    fields = parse_and_print_args()[1]
     if request.method=='GET':
+        fields = parse_and_print_args()[1]
         result=SimpleBO.find_by_primarykey(resource, primarykey, fields)
+        if result:
+            return json.dumps(result), 200, \
+                {"content-type": "application/json; charset: utf-8"}
+        else:
+            return "Not Found", 404
+
+    if request.method=='PUT':
+        in_args=parse_and_print_args()[0]
+        result=SimpleBO.update_by_primarykey(resource, primarykey, in_args)
         if result:
             return json.dumps(result), 200, \
                 {"content-type": "application/json; charset: utf-8"}
