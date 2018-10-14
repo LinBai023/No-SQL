@@ -165,7 +165,7 @@ def find_stats(playerid):
 
 def find_roster(teamid, yearid):
     q = "SELECT a.nameLast as nameLast, a.nameFirst as nameFirst," \
-         "m.playerID AS playerID, m.yearID AS yearid, m.G AS g_all," \
+         "m.playerID AS playerID,m.teamID as teamid, m.yearID AS yearid, m.G AS g_all," \
        "m.H AS hits, m.AB AS ABs, n.A as assists, n.E as errors " \
        "FROM Batting m LEFT JOIN Fielding n " \
         "ON m.playerID=n.playerID " \
