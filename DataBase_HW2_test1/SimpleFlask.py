@@ -18,11 +18,19 @@ def parse_and_print_args():
 
     fields = None
     in_args = None
+    offset = None
+    limit = None
     if request.args is not None:
         in_args = dict(copy.copy(request.args))
         fields = copy.copy(in_args.get('fields', None))
+        offset = copy.copy(in_args.get('offset', None))
+        limit = copy.copy(in_args.get('limit', None))
         if fields:
             del(in_args['fields'])
+        if offset:
+            del(in_args['offset'])
+        if limit:
+            del(in_args['limit'])
 
     try:
         if request.data:
@@ -37,21 +45,22 @@ def parse_and_print_args():
 
     print("Request.args : ", json.dumps(in_args))
     print("Request.fields : ", json.dumps(fields))
-    return in_args, fields, body
+    print("body: ", json.dumps(body))
+    return in_args, fields, body, offset, limit
 
 
 @app.route('/api/<resource>', methods=['GET', 'POST'])
 def get_resource(resource):
 
-    in_args, fields, body = parse_and_print_args()
+    in_args, fields, body, offset, limit = parse_and_print_args()
     print(in_args)
     if request.method == 'GET':
         result = SimpleBO.find_by_template(resource, \
-                                           in_args, fields)
+                                           in_args, fields,offset,limit)
         return json.dumps(result), 200, \
                {"content-type": "application/json; charset: utf-8"}
     elif request.method == 'POST':
-        result=SimpleBO.insert(resource, in_args)
+        result=SimpleBO.insert(resource, body)
         if result:
             return json.dumps(result), 200, \
                 {"content-type": "application/json; charset: utf-8"}
@@ -98,6 +107,68 @@ def get_primarykey(resource, primarykey):
                 {"content-type": "application/json; charset: utf-8"}
         else:
             return "Not Found", 404
+
+
+@app.route('/api/<resource>/<primarykey>/<related_resource>', methods=['GET', 'POST'])
+def get_depedent(resource, related_resource, primarykey):
+
+    if request.method=='GET':
+        fields=parse_and_print_args()[1]
+        result=SimpleBO.find_by_dependent(resource, related_resource,primarykey,fields)
+
+        if result:
+            return json.dumps(result), 200, {"content-type": "application/json; charset: utf-8"}
+        else:
+            return "Not Found", 404
+
+@app.route('/api/teammates/<primarykey>', methods=['GET'])
+def get_teammates(primarykey):
+
+    if request.method=='GET':
+        result = SimpleBO.find_by_teammate(primarykey)
+
+        if result:
+            return json.dumps(result), 200, \
+                {"content-type": "application/json; charset: utf-8"}
+        else:
+            return "Not Found", 404
+
+@app.route('/api/people/<playerid>/career_stats', methods=['GET'])
+def get_stats(playerid):
+
+    if request.method=='GET':
+        result = SimpleBO.find_stats(playerid)
+        if result:
+            return json.dumps(result), 200, \
+                {"content-type": "application/json; charset: utf-8"}
+        else:
+            return "Not Found", 404
+
+@app.route('/api/roster/', methods=['GET'])
+def find_roster():
+    if request.args is not None:
+        in_args = dict(copy.copy(request.args))
+        teamid = copy.copy(in_args.get('teamid', None))
+        yearid = copy.copy(in_args.get('yearid', None))
+        if teamid:
+            del(in_args['teamid'])
+        if yearid:
+            del(in_args['yearid'])
+    if request.method=='GET':
+        result = SimpleBO.find_roster(teamid[0], yearid[0])
+        if result:
+            return json.dumps(result), 200, \
+                {"content-type": "application/json; charset: utf-8"}
+        else:
+            return "Not Found", 404
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
